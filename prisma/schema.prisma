@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// URL Shortener
+
+model Url {
+  id        String   @id @default(cuid())
+  shortUrl  String   @unique
+  longUrl   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Click     Click[]
+  User      User    @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@index([shortUrl])
+}
+
+model Click {
+  id        String   @id @default(cuid())
+  urlId     String
+  createdAt DateTime @default(now())
+
+  url       Url     @relation(fields: [urlId], references: [id])
+  ipAddress String?
+  userAgent String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([urlId])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Urls  Url[]
+  Click Click[]
+}
